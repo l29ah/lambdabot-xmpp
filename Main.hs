@@ -5,7 +5,7 @@ module Main where
 
 import Lambdabot.Main
 import Modules      (modulesInfo)
-import qualified Paths_bot as P
+import qualified Paths_lambdabot_xmpp as P
 
 import Control.Applicative
 import Control.Monad
