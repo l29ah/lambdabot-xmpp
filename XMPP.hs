@@ -145,28 +145,12 @@ readerLoop tag sess xmppconf = forever $ do
       elems tagname mes = filter ((== tagname) . nameLocalName . elementName) $
                           (messagePayload mes)
 
-xmppDefaultParams :: ClientParams
-xmppDefaultParams = (defaultParamsClient "adamflott.com" "") {
-  clientSupported = def {
-    supportedCiphers = CI.ciphersuite_strong
-                       ++ [ CI.cipher_AES256_SHA1, CI.cipher_AES128_SHA1]
-    }
-  , clientHooks = def {
-     onServerCertificate = validateDefault'
-     }
-  }
-  where
-    validateDefault' c v s cc = do -- Allow self-signed X.509 cert
-      rs <- XV.validateDefault c v s cc
-      return $ filter (`notElem` [XV.UnknownCA, XV.SelfSigned]) rs
-
 xmppListen :: XMPPConfig -> IO Session
 xmppListen xmppconf = do
-    let stconf = def { tlsParams = xmppDefaultParams }
     result <- session
               (xmppHost xmppconf)
               (Just (\_ -> [plain (T.pack . xmppUser $ xmppconf) Nothing (T.pack . xmppPass $ xmppconf)], Nothing))
-              def { sessionStreamConfiguration = stconf }
+              def
     sess <- case result of
                 Right s -> return s
                 Left e -> error $ "XmppFailure: " ++ (show e)
