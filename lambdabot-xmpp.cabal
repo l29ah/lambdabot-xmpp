@@ -9,6 +9,7 @@ maintainer:          zl29ah@gmail.com
 category:            Development
 build-type:          Simple
 cabal-version:       >=1.10
+Tested-With:         GHC == 8.4.4
 
 executable lambdabot
   main-is:             Main.hs
