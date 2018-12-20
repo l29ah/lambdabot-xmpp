@@ -11,6 +11,15 @@ build-type:          Simple
 cabal-version:       >=1.10
 Tested-With:         GHC == 8.4.4
 
+Source-repository head
+  type:              git
+  location:          https://github.com/l29ah/lambdabot-xmpp
+
+Source-repository this
+  type:              git
+  location:          https://github.com/l29ah/lambdabot-xmpp
+  tag:               0.1.0.0
+
 executable lambdabot
   main-is:             Main.hs
   other-modules:        Modules,
