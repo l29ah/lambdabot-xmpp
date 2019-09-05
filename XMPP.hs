@@ -12,6 +12,8 @@ import Data.List.Split
 import Data.List
 
 -- Hackage
+import Control.Concurrent
+import Control.Concurrent.Chan
 import Control.Concurrent.Lifted (fork)
 import Control.Exception.Lifted as E (SomeException(..), throwIO, catch)
 import Control.Monad.Trans (lift)
@@ -77,13 +79,33 @@ xmppPlugin = newModule
             }
         ]
     }
-    
-sendMessage' :: Session -> XMPPConfig -> IrcMessage -> XMPP ()
-sendMessage' sess xmppconf ircmsg = do
+
+enqueue :: Chan T.Text -> IrcMessage -> XMPP ()
+enqueue chan ircmsg = do
     let msg = Data.List.last (ircMsgParams ircmsg)
     let msg' = filtermsg $ T.filter (not . isControl) (T.drop 1 (T.pack msg))
+    io $ writeChan chan msg'
+    where
+      filtermsg :: T.Text -> T.Text
+      filtermsg m = case (T.isPrefixOf "ACTION " m) of
+        True -> T.replace "ACTION" "/me" m
+        False -> T.stripStart m
+
+readTimeout :: Chan T.Text -> Int -> IO T.Text
+readTimeout chan time = do
+    result <- timeout time $ readChan chan
+    case result of
+        Nothing -> return T.empty
+        Just text -> do
+            next <- readTimeout chan time
+            return $ T.concat [text, next]
+
+consolidate :: Session -> XMPPConfig -> Chan T.Text -> XMPP ()
+consolidate sess xmppconf chan = io $ forever $ do
+    first <- readChan chan
+    others <- readTimeout chan 50000
     let name = Name "body" (Just "jabber:client") Nothing
-        node = NodeContent (ContentText msg')
+        node = NodeContent (ContentText $ T.concat [first, others])
     let payload = Element name [] [node]
 
     let m = Message{ messageFrom    = Nothing
@@ -96,18 +118,13 @@ sendMessage' sess xmppconf ircmsg = do
             }
     io $ sendMessage m sess >> return ()
 
-    where
-      filtermsg :: T.Text -> T.Text
-      filtermsg m = case (T.isPrefixOf "ACTION " m) of
-        True -> T.replace "ACTION" "/me" m
-        False -> T.stripStart m
-      
-
 online :: String -> XMPPConfig -> XMPP ()
 online tag xmppconf = do
+    chan <- io $ newChan
     sess <- io $ xmppListen xmppconf
+    void . fork $ consolidate sess xmppconf chan
     E.catch
-        (registerServer tag (sendMessage' sess xmppconf))
+        (registerServer tag (enqueue chan))
         (\err@SomeException{} -> E.throwIO err)
         
     void . fork $ E.catch
