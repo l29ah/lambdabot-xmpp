@@ -1,5 +1,5 @@
 name:                lambdabot-xmpp
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            Lambdabot plugin for XMPP (Jabber) protocol
 description:         Usage: cabal build && .\/dist\/build\/lambdabot\/lambdabot -e 'xmpp-connect asdfasdf example.com 5222 username nick password haskell@conference.example.com'
 license:             OtherLicense
@@ -18,7 +18,7 @@ Source-repository head
 Source-repository this
   type:              git
   location:          https://github.com/l29ah/lambdabot-xmpp
-  tag:               0.1.0.0
+  tag:               0.1.0.1
 
 executable lambdabot
   main-is:             Main.hs
