@@ -25,7 +25,7 @@ executable lambdabot
   other-modules:        Modules,
                         Paths_lambdabot_xmpp,
                         XMPP
-  build-depends:        base >=4.11 && <4.12,
+  build-depends:        base >=4.11 && <4.13,
                         pontarius-xmpp >= 0.4.5 && < 0.6,
                         lambdabot-core >= 5.1 && < 5.2,
                         lambdabot-haskell-plugins >= 5.1 && < 5.2,
