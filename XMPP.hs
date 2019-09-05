@@ -127,7 +127,8 @@ readerLoop tag sess xmppconf = forever $ do
 
     when ((/=) from (xmppNick xmppconf) &&
           null delayElems &&
-          (not . null) bodyElems) $ do
+          (not . null) bodyElems &&
+          messageType mes == GroupChat) $ do
         
         let body = head $ elementText (head bodyElems)
             
