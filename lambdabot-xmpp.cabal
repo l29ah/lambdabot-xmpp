@@ -20,7 +20,7 @@ Source-repository this
   location:          https://github.com/l29ah/lambdabot-xmpp
   tag:               0.1.0.2
 
-executable lambdabot
+executable lambdabot-xmpp
   main-is:             Main.hs
   other-modules:        Modules,
                         Paths_lambdabot_xmpp,
