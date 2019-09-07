@@ -91,6 +91,8 @@ enqueue chan ircmsg = do
         True -> T.replace "ACTION" "/me" m
         False -> T.stripStart m
 
+joinMessages = T.intercalate (T.singleton '\n')
+
 readTimeout :: Chan T.Text -> Int -> IO T.Text
 readTimeout chan time = do
     result <- timeout time $ readChan chan
@@ -98,14 +100,14 @@ readTimeout chan time = do
         Nothing -> return T.empty
         Just text -> do
             next <- readTimeout chan time
-            return $ T.concat [text, next]
+            return $ joinMessages [text, next]
 
 consolidate :: Session -> XMPPConfig -> Chan T.Text -> XMPP ()
 consolidate sess xmppconf chan = io $ forever $ do
     first <- readChan chan
     others <- readTimeout chan 50000
     let name = Name "body" (Just "jabber:client") Nothing
-        node = NodeContent (ContentText $ T.concat [first, others])
+        node = NodeContent (ContentText $ joinMessages [first, others])
     let payload = Element name [] [node]
 
     let m = Message{ messageFrom    = Nothing
