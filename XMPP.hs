@@ -91,7 +91,7 @@ enqueue chan ircmsg = do
         True -> T.replace "ACTION" "/me" m
         False -> T.stripStart m
 
-joinMessages = T.intercalate (T.singleton '\n')
+joinMessages = T.intercalate (T.singleton '\n') . filter (not . T.null)
 
 readTimeout :: Chan T.Text -> Int -> IO T.Text
 readTimeout chan time = do
