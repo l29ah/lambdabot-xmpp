@@ -67,6 +67,11 @@ usage errors = do
     
     exitWith (if isErr then ExitFailure 1 else ExitSuccess)
 
+commonConfig =
+    [ lbVersion ==> P.version
+    , textWidth ==> 4096
+    ]
+
 -- do argument handling
 main :: IO ()
 main = do
@@ -75,12 +80,12 @@ main = do
     config' <- sequence config
     dir <- P.getDataDir
     exitWith <=< lambdabotMain modulesInfo $
-        [dataDir ==> dir, lbVersion ==> P.version] ++ config'
+        (dataDir ==> dir) : commonConfig ++ config'
 
 
 -- special online target for ghci use
 online :: [String] -> IO ()
 online strs = do
     dir <- P.getDataDir
-    void $ lambdabotMain modulesInfo
-        [dataDir ==> dir, lbVersion ==> P.version, onStartupCmds ==> strs]
+    void $ lambdabotMain modulesInfo $
+        (dataDir ==> dir) : commonConfig
