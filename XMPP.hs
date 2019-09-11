@@ -24,14 +24,7 @@ import Network.TLS (
   )
 import qualified Network.TLS.Extra as CI
 import Data.Default (def)
-import Network.Xmpp (
-  SessionConfiguration(sessionStreamConfiguration)
-  , StreamConfiguration(tlsParams)
-  , parseJid, getJid, resourcepart, Session, session, plain
-  , Presence(presenceFrom, presenceTo, presencePayload)
-  , sendPresence, getMessage, messageFrom, messageTo, messagePayload
-  , sendMessage, Message(..), MessageType(..)
-  )
+import Network.Xmpp
 import Data.XML.Types (
   nameLocalName, elementName, elementText
   , Element(Element), Name(Name), Content(ContentText), Node(..)
@@ -170,7 +163,10 @@ xmppListen xmppconf = do
     result <- session
               (xmppHost xmppconf)
               (Just (\_ -> [plain (T.pack . xmppUser $ xmppconf) Nothing (T.pack . xmppPass $ xmppconf)], Nothing))
-              def
+              def { onConnectionClosed = \sess _ -> do
+                      reconnect' sess
+                      sendMUCPresence xmppconf sess
+                  }
     sess <- case result of
                 Right s -> return s
                 Left e -> error $ "XmppFailure: " ++ (show e)
