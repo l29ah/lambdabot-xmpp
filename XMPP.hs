@@ -10,6 +10,7 @@ import Data.Char (isControl)
 import Control.Monad
 import Data.List.Split
 import Data.List
+import Data.Word
 
 -- Hackage
 import Control.Concurrent
@@ -17,7 +18,6 @@ import Control.Concurrent.Chan
 import Control.Concurrent.Lifted (fork)
 import Control.Exception.Lifted as E (SomeException(..), throwIO, catch)
 import Control.Monad.Trans (lift)
-import Network (PortID(..))
 import qualified Data.Text as T
 import Network.TLS (
   ClientParams(..), ClientHooks(..), defaultParamsClient, Supported(..)
@@ -44,7 +44,7 @@ type XMPP = ModuleT () LB
 
 data XMPPConfig = XMPPConfig {
     xmppHost :: String,
-    xmppPort :: PortID,
+    xmppPort :: Word16,
     xmppUser :: String,
     xmppNick :: String,
     xmppPass :: String,
@@ -65,7 +65,7 @@ xmppPlugin = newModule
             , process = \rest ->
                          case splitOn " " rest of
                           tag:hostn:portn:usern:nick:passw:room -> do
-                              pn <- (PortNumber . fromInteger) `fmap` readM portn
+                              pn <- fromInteger `fmap` readM portn
                               let xmppconf = XMPPConfig hostn pn usern nick passw (intercalate " " room)
                               lift (online tag xmppconf)
                           _ -> say "XMPP: Not enough parameters!"
